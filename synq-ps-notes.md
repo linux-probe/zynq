@@ -71,11 +71,13 @@ FSBL/User code执行的操作：
 - 把系统控制交给第二阶段bootloader或者bare-metal应用程序 
 
 
+#### MIO-EMIO
+
+##### MIO
+
+MIO基本是用于I/O外设。软件编程将I/O signal s route to MIO pins. I/O signals也可以被路由到EMIO pins。
 
 
 
-
-
- 
 
 
