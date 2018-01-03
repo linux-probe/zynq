@@ -31,7 +31,6 @@ MIO[6]为低电平，PLL Bypassed模式，直接使用100M clk
 3. 对于映射到高地址的OCM地址，每一个64KB section 不在SCU的地址过滤范围之内（因为SCU的映射粒度是1M，所以OCM为高地址，就不再OCM的范围之内了）将会成为CPU和ACP master地址范围0x000C_0000-0x000F_FFFF 的一个别名。访问这个地址和访问高地址空间是一个效果。
 4. 其他不通过SCU的master不能访问DDR的低512K空间（是在CPU将低地址全部影射为DDR空间时，既都重定向到L2 cache controller）。是因为，其他的master都是安装固定的地址解码机制，其他master看到的OCM的地址范围为0x0000_0000 to 0x0007_FFFF 或者address 0xFFFC_0000 to 0xFFFF_FFFF 。所以OCM映射到低地址，其他master就不能访问0x0000_0000 to 0x0007_FFFF了。
 
-
 #### 初始化地址映射
 
 在系统上电复位后，进入user模式，OCM的128K被映射到低地址空间，另外64K被映射到高地址空间。
@@ -76,7 +75,7 @@ FSBL/User code执行的操作：
 ##### MIO
 
 MIO基本是用于I/O外设。软件编程将I/O signal s route to MIO pins. I/O signals也可以被路由到EMIO pins。
-=======
+
 #### QSPI
 
 ##### linear Address Mode
