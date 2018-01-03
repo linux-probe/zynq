@@ -59,7 +59,7 @@ SCU地址过滤范围通过使用下面两个寄存器进行配置：
 > assert: Drive a signal to its active voltage level, either high or low.
 > deassert: Drive a signal to its inactive voltage level, either high or low.
 
-BootROM主要工作：配置system，辅助Boot Image FSBL/User code从boot device到OCM。然后跳转到OCM执行代码。FSBL/User code也可以在Quad-SPI或NOR设备上直接执行，在非安全环境。
+BootROM主要工作：配置system，copy Boot Image FSBL/User code从boot device到OCM。然后跳转到OCM执行代码。FSBL/User code也可以在Quad-SPI或NOR设备上直接执行，在非安全环境。
 
 ##### FSBL/User Code
 
@@ -76,8 +76,12 @@ FSBL/User code执行的操作：
 ##### MIO
 
 MIO基本是用于I/O外设。软件编程将I/O signal s route to MIO pins. I/O signals也可以被路由到EMIO pins。
+=======
+#### QSPI
 
+##### linear Address Mode
 
+**When a single device is used, the address map for direct memory reads starts at FC00_0000 and goes to a maximum of FCFF_FFFF (16 MB).**The address map for a two-device system depends on the memory devices and the I/O configuration. In two-device systems, the Quad-SPI devices need to be from the same vendor so they have the same protocol. 
 
-
+在PS是QSPI启动的时候，QSPI在linear mode。
 
