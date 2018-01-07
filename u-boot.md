@@ -1,8 +1,8 @@
 ### zynq u-boot
 
-#### 连接脚本
+#### 链接脚本
 
-编译zynq_zed使用的连接脚本定义在：u-boot-xlnx/arch/arm/mach-zynq/u-boot.lds。最终生成的连接脚本存放到u-boot根目录,名称为u-boot.lds，内如如下（有删减）：
+编译zynq_zed使用的链接脚本定义在：u-boot-xlnx/arch/arm/mach-zynq/u-boot.lds。最终生成的链接脚本存放在u-boot根目录,名称为u-boot.lds，内如如下（有删减）：
 
 ```assembly
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
@@ -91,7 +91,7 @@ _start:
 
 该文件的代码定义在段.vectors段中。
 
-虽然可以看到在连接脚本中 . = 0x00000000;但是起始代码是从0x40 00000开始的，这是在连接的时候传递给ld的参数，连接的命令如下：
+虽然可以看到在链接脚本中 . = 0x00000000;但是起始代码是从0x400 0000开始的，这是在链接的时候传递给ld的参数，链接的命令如下（有删减）：
 
 ```c++
 arm-linux-gnueabihf-ld.bfd   -pie  --gc-sections -Bstatic -Ttext 0x4000000 -o u-boot -T u-boot.lds arch/arm/cpu/armv7/start.o --start-group  arch/arm/cpu/built-in.o  arch/arm/cpu/armv7/built-in.o   --end-group arch/arm/lib/eabi_compat.o  arch/arm/lib/lib.a -Map u-boot.map
@@ -111,7 +111,7 @@ arm-linux-gnueabihf-ld.bfd   -pie  --gc-sections -Bstatic -Ttext 0x4000000 -o u-
  }
 ```
 
-从上面的连接脚本可以看到.text输出段，主要包含下面的输入段：
+从上面的链接脚本可以看到.text输出段，主要包含下面的输入段：
 
 1. ``*(.__image_copy_start)``所有的名为``.__image_copy_start``段
 2. 所有的``.vectors``段
@@ -163,7 +163,7 @@ char __image_copy_end[0] __attribute__((section(".__image_copy_end")));
  */
 ```
 
-定义在C文件中，linker使用R_ARM_RELATIVE重定位，而不是使用R_ARM_ABS32，如果symbols定义在linker file（连接脚本）那么就会使用R_ARM_ABS32重定位。
+定义在C文件中，linker使用R_ARM_RELATIVE重定位，而不是使用R_ARM_ABS32，如果symbols定义在linker file（链接脚本）那么就会使用R_ARM_ABS32重定位。
 
 我么需要一个0字节大小的类型来定义这个symbols，编译器不允许定义C语言类型为void的变量。使用一个空的结构体编译是允许的，但是gcc 4.4和一下的编译器会把欧安，因此，使用了更好的：零大小的数组。
 
@@ -259,4 +259,5 @@ void board_init_f(ulong dummy)
 }
 ```
 
-在arch_cpu_init()函数中CONFIG_SYS_SDRAM_BASE宏没有定义，默认值就是0
+在arch_cpu_init()函数中CONFIG_SYS_SDRAM_BASE宏没有定义，默认值就是0。
+
