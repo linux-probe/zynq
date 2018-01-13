@@ -243,21 +243,107 @@ save_boot_params_ret:
 _main定义在arch\arm\lib\crt0.S
 
 主要是准备C语言执行环境，调用board_init_f函数
+##### 设置堆栈指针
+
+```assembly
+ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
+```
+
+sp为堆栈指针寄存器，在C程序函数调用，参数入栈和出栈时会用到，是运行C代码必须要配置的。
+
+##### gd定义
+
+```c
+#ifdef CONFIG_ARM64
+#define DECLARE_GLOBAL_DATA_PTR		register volatile gd_t *gd asm ("x18")
+#else
+#define DECLARE_GLOBAL_DATA_PTR		register volatile gd_t *gd asm ("r9")
+#endif
+#endif
+```
+
 
 ###### board_init_f
 
-board_init_f定义在arch\arm\mach-zynq\spl.c
+board_init_f定义在common\board_f.c中
 
 ```c
-void board_init_f(ulong dummy)
+void board_init_f(ulong boot_flags)
 {
-  	/**board\xilinx\zynq\zynq-zed\ps7_init_gpl.c
-  	 *初始化MIO,PLL,Clock, DDR和外设
-  	 **/
-	ps7_init();
-	arch_cpu_init();
+	gd->flags = boot_flags;
+	gd->have_console = 0;
+
+	if (initcall_run_list(init_sequence_f))
+		hang();
 }
+
 ```
 
-在arch_cpu_init()函数中CONFIG_SYS_SDRAM_BASE宏没有定义，默认值就是0。
+#### adr指令
+
+adr其实是伪指令，不是真正的汇编指令，在编译的时候，该指令会被替换为add或sub 然后加上pc在加上offset的形式，如u-boot中一下指令，其中here为一个lable：
+
+```assembly
+adr	lr, here
+```
+
+最终被编译成如下指令：
+
+```assembly
+add     lr, pc, #12
+```
+
+adr表示将一个标号的地址存入一个寄存器，但是该地址是相对地址，和代码运行情况有关，比如：`add r0, pc, #0假如这段代码在 0x30000000 运行，那么 adr r0, _start 得到 r0 = 0x3000000c；如果在地址 0 运行，就是 0x0000000c 了。
+
+adr可以表示该标号在运行时的地址，使用adr指令可以实现位置无关代码，无论在什么地址运行都可以正确得到标号的值。
+
+#### relocate
+
+```assembly
+	adr	lr, here /*把lable here运行时的地址存入lr寄存器中，执行bx lr指令时就会返回到here lable*/
+	ldr	r0, [r9, #GD_RELOC_OFF]		/* r0 = gd->reloc_off */
+	add	lr, lr, r0 /*r0寄存器现在的值应给为0*/
+	ldr	r0, [r9, #GD_RELOCADDR]		/* r0 = gd->relocaddr */
+	b	relocate_code
+here:
+	bl	relocate_vectors
+```
+
+```assembly
+ENTRY(relocate_code)
+	ldr	r1, =__image_copy_start	/* r1 <- SRC &__image_copy_start */
+	subs	r4, r0, r1		/* r4 <- relocation offset */
+	beq	relocate_done		/* skip relocation */
+	ldr	r2, =__image_copy_end	/* r2 <- SRC &__image_copy_end */
+
+copy_loop:
+	ldmia	r1!, {r10-r11}		/* copy from source address [r1]    */
+	stmia	r0!, {r10-r11}		/* copy to   target address [r0]    */
+	cmp	r1, r2			/* until source end address [r2]    */
+	blo	copy_loop
+
+	/*
+	 * fix .rel.dyn relocations
+	 */
+	ldr	r2, =__rel_dyn_start	/* r2 <- SRC &__rel_dyn_start */
+	ldr	r3, =__rel_dyn_end	/* r3 <- SRC &__rel_dyn_end */
+fixloop:
+	ldmia	r2!, {r0-r1}		/* (r0,r1) <- (SRC location,fixup) */
+	and	r1, r1, #0xff
+	cmp	r1, #R_ARM_RELATIVE
+	bne	fixnext
+
+	/* relative fix: increase location by offset */
+	add	r0, r0, r4
+	ldr	r1, [r0]
+	add	r1, r1, r4
+	str	r1, [r0]
+fixnext:
+	cmp	r2, r3
+	blo	fixloop
+
+relocate_done:
+	bx	lr
+
+```
 
