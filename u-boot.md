@@ -279,6 +279,106 @@ void board_init_f(ulong boot_flags)
 
 ```
 
+###### init_sequence_f
+
+```c
+static init_fnc_t init_sequence_f[] = {
+	setup_mon_len,
+	fdtdec_setup,
+	initf_malloc,
+	initf_console_record,
+	arch_cpu_init,		/* basic arch cpu dependent setup */
+	mach_cpu_init,		/* SoC/machine dependent CPU setup */
+	initf_dm,
+	arch_cpu_init_dm,
+	timer_init,		/* initialize timer */
+	mark_bootstage,
+	env_init,		/* initialize environment */
+	init_baud_rate,		/* initialze baudrate settings */
+	serial_init,		/* serial communications setup */
+	console_init_f,		/* stage 1 init of console */
+	display_options,	/* say that we are here */
+	display_text_info,	/* show debugging info if required */
+	print_cpuinfo,		/* display cpu info (and speed) */
+	show_board_info,
+	INIT_FUNC_WATCHDOG_INIT
+	INIT_FUNC_WATCHDOG_RESET
+	announce_dram_init,
+	/* TODO: unify all these dram functions? */
+	dram_init,		/* configure available RAM banks */
+	INIT_FUNC_WATCHDOG_RESET
+	INIT_FUNC_WATCHDOG_RESET
+	INIT_FUNC_WATCHDOG_RESET
+	/*
+	 * Now that we have DRAM mapped and working, we can
+	 * relocate the code and continue running from DRAM.
+	 *
+	 * Reserve memory at end of RAM for (top down in that order):
+	 *  - area that won't get touched by U-Boot and Linux (optional)
+	 *  - kernel log buffer
+	 *  - protected RAM
+	 *  - LCD framebuffer
+	 *  - monitor code
+	 *  - board info struct
+	 */
+	setup_dest_addr,
+	reserve_round_4k,/*gd->relocaddr &= ~(4096 - 1);4K对齐*/
+	reserve_mmu,
+	reserve_trace,
+	reserve_malloc,
+	reserve_board,
+	setup_machine,
+	reserve_global_data,
+	reserve_fdt,
+	reserve_arch,
+	reserve_stacks,
+	setup_dram_config,
+	show_dram_config,
+	display_new_sp,
+	INIT_FUNC_WATCHDOG_RESET
+	reloc_fdt,
+	setup_reloc,
+	NULL,
+};
+```
+
+###### setup_dest_addr
+
+```c
+static int setup_dest_addr(void)
+{
+	debug("Ram size: %08lX\n", (ulong)gd->ram_size);
+	/*获取ram大小*/
+	gd->ram_size = board_reserve_ram_top(gd->ram_size);
+	/*下面两句都是获取ram_top地址*/
+	gd->ram_top += get_effective_memsize();
+	gd->ram_top = board_get_usable_ram_top(gd->mon_len);
+	gd->relocaddr = gd->ram_top;
+	debug("Ram top: %08lX\n", (ulong)gd->ram_top);
+	return 0;
+}
+```
+
+###### setup_reloc
+
+```c
+static int setup_reloc(void)
+{
+#ifdef CONFIG_SYS_TEXT_BASE
+  	/**
+  	 *gd->relocaddr = gd->ram_top;
+  	 *CONFIG_SYS_TEXT_BASE:0x4000000
+  	 *relocate地址和编译起始地址的差值。需要后期继续分析
+  	 */
+	gd->reloc_off = gd->relocaddr - CONFIG_SYS_TEXT_BASE;
+#endif
+	memcpy(gd->new_gd, (char *)gd, sizeof(gd_t));
+	return 0;
+}
+```
+
+
+
 #### adr指令
 
 adr其实是伪指令，不是真正的汇编指令，在编译的时候，该指令会被替换为add或sub 然后加上pc在加上offset的形式，如u-boot中一下指令，其中here为一个lable：
