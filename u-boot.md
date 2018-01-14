@@ -1,6 +1,6 @@
-### zynq u-boot
+#zynq u-boot
 
-#### 链接脚本
+## 链接脚本
 
 编译zynq_zed使用的链接脚本定义在：u-boot-xlnx/arch/arm/mach-zynq/u-boot.lds。最终生成的链接脚本存放在u-boot根目录,名称为u-boot.lds，内如如下（有删减）：
 
@@ -66,7 +66,7 @@ SECTIONS
  }
 ```
 
-##### 入口地址
+### 入口地址
 
 从上面可以看出程序的入口符号为_start,定义在arch\arm\lib\vectors.S，内容如下：
 
@@ -99,7 +99,7 @@ arm-linux-gnueabihf-ld.bfd   -pie  --gc-sections -Bstatic -Ttext 0x4000000 -o u-
 
 其中-pie表示位置无关。-Ttext 0x4000000指定了text段的入口地址。
 
-#### .text 输出段
+### .text 输出段
 
 ```
  .text :
@@ -120,7 +120,7 @@ arm-linux-gnueabihf-ld.bfd   -pie  --gc-sections -Bstatic -Ttext 0x4000000 -o u-
 
 上面的链接是有顺序的，顺序就按照各个输入段出现的顺序。
 
-##### ``.__image_copy_start``和``.__image_copy_end``
+#### ``.__image_copy_start``和``.__image_copy_end``
 
 ``__image_copy_start``和``__image_copy_end``是配合在一块使用的，定义文件	arch\arm\lib\sections.c，如下：
 
@@ -167,7 +167,7 @@ char __image_copy_end[0] __attribute__((section(".__image_copy_end")));
 
 我么需要一个0字节大小的类型来定义这个symbols，编译器不允许定义C语言类型为void的变量。使用一个空的结构体编译是允许的，但是gcc 4.4和一下的编译器会把欧安，因此，使用了更好的：零大小的数组。
 
-######  ``__image_copy_start`` 和 `` __image_copy_end``赋值
+####  ``__image_copy_start`` 和 `` __image_copy_end``赋值
 
 这两个变量在编译后的值是多少，u-boot.map中查到
 
@@ -217,7 +217,7 @@ char __image_copy_end[0] __attribute__((section(".__image_copy_end")));
 
 所以需要采用那么怪异的定义方式。
 
-#### reset
+### reset
 
 reset symbal定义在arch\arm\cpu\armv7\start.S,如下：
 
@@ -238,7 +238,7 @@ save_boot_params_ret:
 
 通过r0寄存器判断是否从spl加载的u-boot，并把结果存放在from_spl变量中，然后返回到save_boot_params_ret。
 
-##### _main
+####  _main
 
 _main定义在arch\arm\lib\crt0.S
 
@@ -263,7 +263,7 @@ sp为堆栈指针寄存器，在C程序函数调用，参数入栈和出栈时�
 ```
 
 
-###### board_init_f
+##### board_init_f
 
 board_init_f定义在common\board_f.c中
 
