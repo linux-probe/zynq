@@ -78,6 +78,8 @@ movt    r3, #:upper16:a
 
 将r2寄存的值存储到r3寄存器值对应的地址处，既给a变量赋值。
 
+
+
 ## u-boot编译
 
 u-boot编译的时候会加上如下选项
@@ -134,8 +136,12 @@ test:
 
 从上面可以看出，.L2起始是紧挨着函数的，而且寻找也是用的是PC + offset的方式，是位置无关的。我们只要修改.L2 地址处的值就可以改变a变量的地址了。
 
+
+
 ## relocate code准备
+
 ### setup_mon_len
+
 ```c
 static int setup_mon_len(void)
 {
@@ -144,11 +150,15 @@ static int setup_mon_len(void)
 }
 ```
 
+
+
 ### setup_dest_addr
 
 gd->relocaddr = gd->ram_top;
 
 主要是设置gd->relocaddr
+
+
 
 ### reserve_uboot
 
@@ -166,6 +176,8 @@ static int reserve_uboot(void)
 	return 0;
 }
 ```
+
+
 
 ###  setup_reloc
 
@@ -188,6 +200,8 @@ static int setup_reloc(void)
 
 执行完了上面之后，就返回汇编部分
 
+
+
 ## relocate_code
 
 ```assembly
@@ -209,6 +223,8 @@ here:
 2.r9为gd变量的指针，表示将gd->reloc_off加载到r9寄存器中。
 
 3.gd->reloc_off + here = 搬运后here lable的地址。lr为链接寄存器，在执行返回时候用，因为relocate_code之后要跳转到搬运后的代码，该步骤是计算返回后跳转地址
+
+
 
 ### relocate_code
 
@@ -281,6 +297,28 @@ ENDPROC(relocate_code)
 
 ```
 
+
+
+## adr指令
+
+adr其实是伪指令，不是真正的汇编指令，在编译的时候，该指令会被替换为add或sub 然后加上pc在加上offset的形式，如u-boot中一下指令，其中here为一个lable：
+
+```assembly
+adr	lr, here
+```
+
+最终被编译成如下指令：
+
+```assembly
+add     lr, pc, #12
+```
+
+adr表示将一个标号的地址存入一个寄存器，但是该地址是相对地址，和代码运行情况有关，比如：`add r0, pc, #0`假如这段代码在 0x30000000 运行，那么 adr r0, _start 得到 r0 = 0x3000000c；如果在地址 0 运行，就是 0x0000000c 了。
+
+adr可以获取该标号在运行时的地址，使用adr指令可以实现位置无关代码，无论在什么地址运行都可以正确得到标号的值。
+
+
+
 ## .rel.dyn格式
 
 反汇编后看到的.rel.dyn的数据如下：
@@ -291,6 +329,8 @@ ENDPROC(relocate_code)
 第一列表示的是反汇编后的地址，第二轮是真是的数据，后面的是反汇编后的指令，其实根部不是指令，这里的单纯就是数据。
 
 040021c4 ：是一个变量的间接地址，相当于.L2的地址
+
+
 
 ## u-boot摘录
 
