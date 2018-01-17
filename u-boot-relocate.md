@@ -297,7 +297,33 @@ ENDPROC(relocate_code)
 
 ```
 
+### relocate_vectors
 
+```assembly
+/*
+ * Default/weak exception vectors relocation routine
+ *
+ * This routine covers the standard ARM cases: normal (0x00000000),
+ * high (0xffff0000) and VBAR. SoCs which do not comply with any of
+ * the standard cases must provide their own, strong, version.
+ */
+
+	.section	.text.relocate_vectors,"ax",%progbits
+	.weak		relocate_vectors
+
+ENTRY(relocate_vectors)
+	/*
+	 * If the ARM processor has the security extensions,
+	 * use VBAR to relocate the exception vectors.
+	 */
+	ldr	r0, [r9, #GD_RELOCADDR]	/* r0 = gd->relocaddr */
+	mcr     p15, 0, r0, c12, c0, 0  /* Set VBAR */
+	bx	lr
+
+ENDPROC(relocate_vectors)
+```
+
+contex A9有VBAR寄存器，所以就把gd->relocaddr的值设置为VBAR寄存器的值，该值为u-boot的入口地址。
 
 ## adr指令
 
