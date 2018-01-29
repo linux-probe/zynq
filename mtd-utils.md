@@ -88,5 +88,13 @@ make -j8
 ./configure --host=arm-linux-gnueabihf --prefix=/home/assin/zynx/rootfs/rootfs-xlnx/ubifs/mtd-utils/install/  CPPFLAGS="-I/home/assin/zynx/rootfs/rootfs-xlnx/ubifs/libs/libuuid-1.0.3/install/include -I/home/assin/zynx/rootfs/rootfs-xlnx/ubifs/libs/zlib-1.2.11/install/include -I/home/assin/zynx/rootfs/rootfs-xlnx/ubifs/libs/lzo-2.10/install/include" LDFLAGS="-L/home/assin/zynx/rootfs/rootfs-xlnx/ubifs/libs/libuuid-1.0.3/install/lib -L/home/assin/zynx/rootfs/rootfs-xlnx/ubifs/libs/zlib-1.2.11/install/lib -L/home/assin/zynx/rootfs/rootfs-xlnx/ubifs/libs/lzo-2.10/install/lib"
 ```
 
-CPPFLAGS知道头文件的路径，LDFLAGS指定连接库的路径。
+CPPFLAGS指定头文件的路径，LDFLAGS指定连接库的路径。
+
+2.编译
+
+make -j8
+
+3.make install
+
+编译出来的可执行文件都是静态编译的，因此不需要将编译时依赖的库复制到板子上去。
 
