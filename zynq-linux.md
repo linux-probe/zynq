@@ -100,6 +100,7 @@ mtd4: 00400000 00010000 "qspi-bitstream"
 4.挂载
 
 ​	mount -t ubifs /dev/ubi0_0  /mnt
+可以参考http://blog.csdn.net/mirkerson/article/details/8314018
 
 ### 对已有文件系统挂载
 
