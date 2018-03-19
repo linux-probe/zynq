@@ -165,7 +165,7 @@ char __image_copy_end[0] __attribute__((section(".__image_copy_end")));
 
 定义在C文件中，linker使用R_ARM_RELATIVE重定位，而不是使用R_ARM_ABS32，如果symbols定义在linker file（链接脚本）那么就会使用R_ARM_ABS32重定位。
 
-我么需要一个0字节大小的类型来定义这个symbols，编译器不允许定义C语言类型为void的变量。使用一个空的结构体编译是允许的，但是gcc 4.4和一下的编译器会把欧安，因此，使用了更好的：零大小的数组。
+我么需要一个0字节大小的类型来定义这个symbols，编译器不允许定义C语言类型为void的变量。使用一个空的结构体编译是允许的，但是gcc 4.4和一下的编译器会把抱怨，因此，使用了更好的：零大小的数组。
 
 ####  ``__image_copy_start`` 和 `` __image_copy_end``赋值
 
